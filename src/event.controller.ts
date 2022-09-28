@@ -2,11 +2,13 @@ import { Controller, Get } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
+import { Workshop } from './entities/workshop.entity';
 
 @Controller()
 export class EventController {
   constructor(
     @InjectRepository(Event) private eventRepository: Repository<Event>,
+    @InjectRepository(Workshop) private workshopRepository: Repository<Workshop>,
   ) {}
 
   @Get('warmupevents')
@@ -99,9 +101,13 @@ export class EventController {
      */
 
   @Get('events')
-  getEventsWithWorkshops() {
+  async getEventsWithWorkshops() {
     //Implement in coding task 1
-    return [];
+    const events = await this.eventRepository.find();
+    for (let event of events) {
+      event["workshops"] = await this.workshopRepository.findBy({ event_id: event.id});
+    }
+    return events;
   }
 
   /*
@@ -177,8 +183,9 @@ export class EventController {
      */
 
   @Get('futureevents')
-  getFutureEventWithWorkshops() {
+  async getFutureEventWithWorkshops() {
     //implement in coding task2
+    const events = await this.eventRepository.find();
     return [];
   }
 }
