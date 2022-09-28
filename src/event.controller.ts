@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from "typeorm";
 import { Event } from './entities/event.entity';
 import { Workshop } from './entities/workshop.entity';
 
@@ -185,7 +185,15 @@ export class EventController {
   @Get('futureevents')
   async getFutureEventWithWorkshops() {
     //implement in coding task2
-    const events = await this.eventRepository.find();
-    return [];
+    const workshops = await this.workshopRepository.createQueryBuilder(`w`)
+      .select('DISTINCT(event_id)').where(`w.start > NOW()`).getRawMany();
+
+    let events = [];
+    for (let ws of workshops) {
+      const event = await this.eventRepository.findOneBy({id : ws["event_id"]});
+      event["workshops"] = await this.workshopRepository.findBy({ event_id: event.id});
+      events.push(event);
+    }
+    return events;
   }
 }
