@@ -92,7 +92,10 @@ export class MenuController {
      */
   @Get('menu')
   async getMenuItems() {
+    // Recursively finds all children
     const menus = await this.menuRepository.find();
+    // Test case is written only for first menu
+    // const menus = await this.menuRepository.find({where: {id : 1}});
     for (let menu of menus) {
       menu["children"] = this.getChildren(menu, menus);
     }
